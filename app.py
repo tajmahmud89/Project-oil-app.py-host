@@ -211,7 +211,7 @@ with st.sidebar:
                     res = requests.post(N8N_WEBHOOK_URL.strip(), json=payload, timeout=20)
                     if res.status_code == 200:
                         st.toast("Pipeline execution successful!", icon="✅")
-                        st.success("Triage Complete: Record classified, stored in database, and notifications routed.")
+                        st.success("✅ AI Triage Successful: Telemetry parsed, SIF risk mapped to IOGP Rules, committed to secure database, and real-time alerts routed via n8n.")
                     else:
                         st.error(f"Execution Error ({res.status_code}): {res.text}")
                 except Exception as e:
