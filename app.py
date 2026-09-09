@@ -368,7 +368,7 @@ if not df.empty:
 
     # High-Risk Precursor Incident Feed
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px;'>📋 Real-Time HSE Intelligence Feed</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px;'> Real-Time HSE Intelligence Feed</h3>", unsafe_allow_html=True)
     
     display_cols = [
         "created_at", "location", "activity", "is_sif_potential",
