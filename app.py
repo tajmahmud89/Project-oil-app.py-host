@@ -15,7 +15,7 @@ st.set_page_config(
 # ---------------- CONFIGURATION ----------------
 SUPABASE_URL = "https://rmbpxtqzxxjcbapuzmxz.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYnB4dHF6eHhqY2JhcHV6bXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjQ5NDMsImV4cCI6MjEwMzk0MDk0M30.ZUvIgfMbz9nf6iJ4v7Uk-vbvy1fvaNxr0vRrhqclJlU"
-N8N_WEBHOOK_URL = "https://missing-magic-charges-consisting.trycloudflare.com"
+N8N_WEBHOOK_URL = "https://thesilentvisualizer.app.n8n.cloud/webhook/submit-safety-log"
 
 # ---------------- LIGHT CORPORATE THEME INJECTION (OIL INDIA BRANDING) ----------------
 st.markdown("""
@@ -87,11 +87,11 @@ st.markdown("""
     /* Risk KPI Badge */
     .badge-red {
         background-color: rgba(227, 24, 55, 0.1);
-        color: #e31837 !important; /* OIL Red */
+        color: #e31837 !important; 
         border: 1px solid rgba(227, 24, 55, 0.3);
     }
     
-    /* System Active KPI Badge (Now Green) */
+    /* System Active KPI Badge (Green) */
     .badge-green {
         background-color: rgba(34, 197, 94, 0.1);
         color: #16a34a !important; 
@@ -118,7 +118,7 @@ st.markdown("""
     }
     
     /* Explicitly make the text of the button white */
-    div.stButton > button:first-child p, div.stButton > button:first-child div {
+    div.stButton > button:first-child * {
         color: #ffffff !important;
     }
 
@@ -341,19 +341,20 @@ if not df.empty:
                 rule_series = pd.Series(all_rules).value_counts().reset_index()
                 rule_series.columns = ["IOGP Rule", "Violation Count"]
                 
+                # Updated high-contrast corporate palette for distinct rule segments
                 fig_pie = px.pie(
                     rule_series,
                     names="IOGP Rule",
                     values="Violation Count",
                     hole=0.6,
-                    color_discrete_sequence=["#e31837", "#b91c1c", "#ef4444", "#fca5a5", "#0f172a"]
+                    color_discrete_sequence=["#e31837", "#0ea5e9", "#f59e0b", "#10b981", "#8b5cf6", "#475569", "#0f172a"]
                 )
                 fig_pie.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
                     font=dict(color="#0f172a", family="Plus Jakarta Sans"),
                     margin=dict(l=10, r=10, t=10, b=10),
-                    legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5)
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
                 )
                 fig_pie.update_traces(marker=dict(line=dict(color='#ffffff', width=2)))
                 st.plotly_chart(fig_pie, use_container_width=True)
