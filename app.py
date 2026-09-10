@@ -184,7 +184,7 @@ st.markdown("""
 # ---------------- SIDEBAR: INGESTION FORM ----------------
 # ---------------- SIDEBAR: INGESTION FORM ----------------
 with st.sidebar:
-    st.markdown('<div style="font-size: 1.4rem; font-weight: 700; color: #000000; margin-bottom: 8px;">Submit Field Safety Observation</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size: 1.6rem; font-weight: 700; color: #000000; margin-bottom: 8px;">Submit Field Safety Observation</div>', unsafe_allow_html=True)
     st.caption("Ingest unstructured near-miss or unsafe condition narratives directly from field operations.")
     
     loc = st.selectbox("Location / Operating Rig", [
