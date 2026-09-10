@@ -7,7 +7,7 @@ from supabase import create_client
 # ---------------- PAGE CONFIGURATION ----------------
 st.set_page_config(
     page_title="OIL SIF-Precursor Intelligence",
-    page_icon="🛢️",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -15,139 +15,134 @@ st.set_page_config(
 # ---------------- CONFIGURATION ----------------
 SUPABASE_URL = "https://rmbpxtqzxxjcbapuzmxz.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYnB4dHF6eHhqY2JhcHV6bXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjQ5NDMsImV4cCI6MjEwMzk0MDk0M30.ZUvIgfMbz9nf6iJ4v7Uk-vbvy1fvaNxr0vRrhqclJlU"
-N8N_WEBHOOK_URL = "https://thesilentvisualizer.app.n8n.cloud/webhook/submit-safety-log"
+N8N_WEBHOOK_URL = "https://project-oil-app-py-host.onrender.com"
 
-# ---------------- LIGHT CORPORATE THEME INJECTION (OIL INDIA BRANDING) ----------------
+# ---------------- SPREADSHEET PARSING FUNCTION ----------------
+def extract_text_from_spreadsheet(uploaded_file, file_ext):
+    """Parses uploaded CSV or XLSX spreadsheet files into concatenated text records."""
+    if file_ext == "csv":
+        df_file = pd.read_csv(uploaded_file)
+    else:
+        df_file = pd.read_excel(uploaded_file)
+    
+    extracted_text = []
+    for index, row in df_file.iterrows():
+        extracted_text.append(f"Observation {index+1}: " + " | ".join(row.astype(str).tolist()))
+    
+    return "\n--- [NEXT RECORD] ---\n".join(extracted_text)
+
+# ---------------- GLASSMORPHIC THEME INJECTION ----------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #f8fafc !important;
     }
 
-    /* Force Global Text Visibility */
-    p, span, label, h1, h2, h3, h4, h5, h6, li, .stMarkdown, .stText {
-        color: #0f172a !important;
+    /* Background Setup */
+    .stApp {
+        background: radial-gradient(circle at 10% 20%, rgba(15, 23, 42, 1) 0%, rgba(10, 15, 29, 1) 90.2%);
+        color: #f1f5f9;
     }
 
-    /* Keep specific red accents */
-    .title-highlight {
-        color: #e31837 !important;
-    }
-
-    /* Sidebar Light Glass Styling */
+    /* Sidebar Glassmorphic Styling */
     section[data-testid="stSidebar"] {
-        background-color: #f8fafc !important;
-        border-right: 1px solid rgba(226, 232, 240, 1) !important;
+        background: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(16px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
-    /* Light Glassmorphic Containers */
+    /* Glass Cards */
     .glass-card {
-        background-color: #ffffff;
-        border: 1px solid rgba(227, 24, 55, 0.15);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s ease;
+        background: rgba(30, 41, 59, 0.55);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        transition: transform 0.2s ease, border-color 0.2s ease;
     }
     
     .glass-card:hover {
-        border-color: rgba(227, 24, 55, 0.5); /* OIL Red Accent */
+        border-color: rgba(56, 189, 248, 0.3);
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(227, 24, 55, 0.08);
     }
 
-    /* Custom KPI Typography */
+    /* KPI Value Display */
     .metric-title {
-        color: #64748b !important;
+        color: #94a3b8;
         font-size: 0.85rem;
-        font-weight: 700;
+        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .metric-value {
-        color: #0f172a !important;
-        font-size: 2.2rem;
-        font-weight: 800;
+        color: #f8fafc;
+        font-size: 1.85rem;
+        font-weight: 700;
         letter-spacing: -0.02em;
-        line-height: 1.1;
     }
     .metric-badge {
         display: inline-block;
         font-size: 0.75rem;
-        padding: 4px 10px;
+        padding: 2px 8px;
         border-radius: 9999px;
-        font-weight: 700;
-        margin-top: 10px;
+        font-weight: 600;
+        margin-top: 4px;
     }
-    
-    /* Risk KPI Badge */
     .badge-red {
-        background-color: rgba(227, 24, 55, 0.1);
-        color: #e31837 !important; 
-        border: 1px solid rgba(227, 24, 55, 0.3);
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
     }
-    
-    /* System Active KPI Badge (Green) */
-    .badge-green {
-        background-color: rgba(34, 197, 94, 0.1);
-        color: #16a34a !important; 
-        border: 1px solid rgba(34, 197, 94, 0.3);
+    .badge-blue {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
-    /* Submit Button Styling (OIL Red Gradient) */
+    /* Primary Interactive Buttons */
     div.stButton > button:first-child {
-        background: linear-gradient(135deg, #e31837 0%, #b91c1c 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 12px 24px !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 10px !important;
+        padding: 10px 20px !important;
         font-weight: 600 !important;
-        letter-spacing: 0.02em !important;
-        box-shadow: 0 4px 15px rgba(227, 24, 55, 0.3) !important;
+        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.35) !important;
         transition: all 0.2s ease !important;
     }
     
     div.stButton > button:first-child:hover {
-        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
-        box-shadow: 0 6px 20px rgba(227, 24, 55, 0.4) !important;
-        transform: scale(1.02) !important;
-    }
-    
-    /* Explicitly make the text of the button white */
-    div.stButton > button:first-child * {
-        color: #ffffff !important;
+        background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+        box-shadow: 0 6px 24px rgba(2, 132, 199, 0.5) !important;
+        transform: translateY(-1px) !important;
     }
 
-    /* Input Fields - Forced Solid White Background & Dark Text */
-    input, textarea, div[data-baseweb="select"] > div, div[data-baseweb="base-input"] {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
-        -webkit-text-fill-color: #0f172a !important;
-        border: 1px solid rgba(148, 163, 184, 0.4) !important;
-        border-radius: 8px !important;
-    }
-    
-    input:focus, textarea:focus, div[data-baseweb="select"] > div:focus {
-        border-color: #e31837 !important;
-        box-shadow: 0 0 0 1px #e31837 !important;
+    /* Input Field Styling */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div, div[data-testid="stFileUploader"] {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 10px !important;
+        color: #f8fafc !important;
     }
 
-    /* Dataframe / Table Container - Forced Solid White Background */
-    [data-testid="stDataFrame"], [data-testid="stDataFrame"] > div, [data-testid="stDataFrame"] canvas {
-        background-color: #ffffff !important;
-        border: 1px solid rgba(226, 232, 240, 1) !important;
-        border-radius: 12px !important;
-    }
-    
-    /* Table Text Visibility */
-    .stDataFrame * {
-        color: #0f172a !important;
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 1px #38bdf8 !important;
     }
 
+    /* Tables & Dataframes */
+    [data-testid="stDataFrame"] {
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -160,21 +155,20 @@ supabase = get_supabase_client()
 
 # ---------------- HEADER ----------------
 st.markdown("""
-<div style="padding: 10px 0 30px 0; border-bottom: 1px solid rgba(227, 24, 55, 0.15); margin-bottom: 30px;">
-    <h1 style="font-size: 2.4rem; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-        <span class="title-highlight">Oil India Limited</span> | SIF Intelligence Engine
+<div style="padding: 12px 0 24px 0;">
+    <h1 style="font-size: 2.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">
+        🛡️ Oil India Limited — SIF Precursor Intelligence Engine
     </h1>
-    <p style="font-size: 1.05rem; color: #64748b; margin: 0; font-weight: 500;">
-        Real-Time Safety Triage, IOGP Rule Auto-Mapping, and Precursor Density Analytics
+    <p style="font-size: 1rem; color: #94a3b8; margin: 0;">
+        Automated AI Triage, IOGP Life-Saving Rules Auto-Mapping, and Operational Risk Density Analytics
     </p>
 </div>
 """, unsafe_allow_html=True)
 
 # ---------------- SIDEBAR: INGESTION FORM ----------------
 with st.sidebar:
-    st.markdown("<h2 style='font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; color: #0f172a;'>Submit Field Safety Observation</h2>", unsafe_allow_html=True)
-    st.caption("Ingest unstructured observations from upstream drilling and production operations.")
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 📝 Submit Observation")
+    st.caption("Ingest unstructured near-miss or unsafe condition narratives directly from field operations.")
     
     loc = st.selectbox("Location / Operating Rig", [
         "Duliajan Central Workshop",
@@ -194,35 +188,57 @@ with st.sidebar:
         "Routine Facility Housekeeping"
     ])
     
-    text = st.text_area("Observation / Incident Narrative", height=150, placeholder="Describe what happened, any equipment involved, and immediate safeguards present...")
+    st.markdown("### 📁 Bulk Spreadsheet Ingestion")
+    uploaded_file = st.file_uploader("Upload CSV or XLSX Reports", type=["csv", "xlsx"])
     
-    submit_btn = st.button("Report Incident", use_container_width=True)
+    st.markdown("**OR**")
+    
+    text = st.text_area("Observation / Incident Narrative", height=140, placeholder="Describe what happened, any high-energy equipment involved, and safeguards present...")
+    
+    submit_btn = st.button("🚀 Ingest & Triage via AI Pipeline", use_container_width=True)
     
     if submit_btn:
-        if text.strip():
+        final_text_payload = ""
+        
+        # 1. Process Uploaded File
+        if uploaded_file is not None:
+            file_ext = uploaded_file.name.split(".")[-1].lower()
+            with st.spinner(f"Extracting records from {file_ext.upper()} file..."):
+                try:
+                    final_text_payload = extract_text_from_spreadsheet(uploaded_file, file_ext)
+                except Exception as ex:
+                    st.error(f"Error reading spreadsheet: {ex}")
+        
+        # 2. Fallback to Manual Text Box
+        elif text.strip():
+            final_text_payload = text.strip()
+            
+        # 3. Dispatch Payload
+        if final_text_payload:
             payload = {
                 "report_id": f"OIL-WEB-{pd.Timestamp.now().strftime('%Y%m%d%H%M%S')}",
                 "location": loc,
                 "activity": act,
-                "report_text": text
+                "report_text": final_text_payload,
+                "is_batch": uploaded_file is not None
             }
             with st.spinner("Dispatching payload through n8n workflow engine..."):
                 try:
                     res = requests.post(N8N_WEBHOOK_URL.strip(), json=payload, timeout=20)
                     if res.status_code == 200:
-                        st.toast("Pipeline execution successful!", icon="✅")
                         st.success("✅ AI Triage Successful: Telemetry parsed, SIF risk mapped to IOGP Rules, committed to secure database, and real-time alerts routed via n8n.")
                     else:
                         st.error(f"Execution Error ({res.status_code}): {res.text}")
                 except Exception as e:
                     st.error(f"Could not connect to n8n Webhook: {e}")
         else:
-            st.warning("Please enter narrative text before submitting.")
+            st.warning("Please upload a CSV/XLSX file or enter narrative text before submitting.")
 
 # ---------------- MAIN DASHBOARD & ANALYTICS ----------------
 try:
     response = supabase.table("oil_safety_logs").select("*").execute()
-    df = pd.DataFrame(response.data)
+    data = response.data
+    df = pd.DataFrame(data)
 except Exception as e:
     df = pd.DataFrame()
     st.error(f"Database Fetch Error: {e}")
@@ -233,7 +249,7 @@ if not df.empty:
     sif_count = len(sif_df)
     sif_rate = (sif_count / total_logs) * 100 if total_logs > 0 else 0.0
 
-    # Custom HTML Glass KPI Cards (Light Corporate Theme)
+    # Top KPI Metrics Cards (Glassmorphic Container)
     kpi1, kpi2, kpi3 = st.columns(3)
     
     with kpi1:
@@ -241,7 +257,7 @@ if not df.empty:
         <div class="glass-card">
             <div class="metric-title">Total Ingested Reports</div>
             <div class="metric-value">{total_logs:,}</div>
-            <div class="metric-badge badge-green">System Active</div>
+            <div class="metric-badge badge-blue">Telemetry Active</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -249,8 +265,8 @@ if not df.empty:
         st.markdown(f"""
         <div class="glass-card">
             <div class="metric-title">Identified SIF Precursors</div>
-            <div class="metric-value" style="color: #e31837;">{sif_count:,}</div>
-            <div class="metric-badge badge-red">High-Energy Risk</div>
+            <div class="metric-value" style="color: #f87171;">{sif_count:,}</div>
+            <div class="metric-badge badge-red">Critical High-Energy</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -259,104 +275,68 @@ if not df.empty:
         <div class="glass-card">
             <div class="metric-title">SIF Precursor Density</div>
             <div class="metric-value">{sif_rate:.1f}%</div>
-            <div class="metric-badge badge-red">Overall Ratio</div>
+            <div class="metric-badge badge-red">Precursor Ratio</div>
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 24px;'></div>", unsafe_allow_html=True)
 
     # Visual Analytics Row
     col_left, col_right = st.columns(2)
 
     with col_left:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px;'>📍 SIF Precursor Density by Asset / Location</h3>", unsafe_allow_html=True)
-        
+        st.subheader("📍 SIF Precursor Density by Asset")
         if not sif_df.empty and "location" in sif_df.columns:
             density = sif_df["location"].value_counts().reset_index()
             density.columns = ["Location", "SIF Precursor Count"]
             
-            # Identify max value for dynamic scaling
-            max_count = density["SIF Precursor Count"].max()
-            density = density.sort_values(by="SIF Precursor Count", ascending=True)
-            
             fig_bar = px.bar(
                 density,
-                x="SIF Precursor Count",
-                y="Location",
+                x="Location",
+                y="SIF Precursor Count",
                 color="SIF Precursor Count",
-                color_continuous_scale=["#ffffff", "#e31837"], 
-                text="SIF Precursor Count",
-                orientation="h",
-                range_color=[0, max_count] # Locks 0 to white and max to red
+                color_continuous_scale=["#f87171", "#ef4444", "#b91c1c"],
+                text="SIF Precursor Count"
             )
-            
             fig_bar.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#0f172a", family="Plus Jakarta Sans"),
-                xaxis=dict(
-                    title="", 
-                    showgrid=False, 
-                    showline=False,
-                    showticklabels=False,
-                    range=[0, max_count * 1.15] # 15% padding prevents numbers from hitting the boundary
-                ),
-                yaxis=dict(
-                    title="", 
-                    showgrid=False, 
-                    showline=False,
-                    tickangle=0,
-                    tickfont=dict(color="#0f172a", size=13, family="Plus Jakarta Sans")
-                ),
-                coloraxis_colorbar=dict(
-                    title=dict(text="Risk Scale", font=dict(color="#64748b", size=12)),
-                    thicknessmode="pixels", thickness=15,
-                    lenmode="pixels", len=200,
-                    yanchor="middle", y=0.5,
-                    tickfont=dict(color="#0f172a", size=11)
-                ),
-                margin=dict(l=10, r=30, t=30, b=10),
-                hoverlabel=dict(bgcolor="#ffffff", font_size=13, font_family="Plus Jakarta Sans")
+                font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                xaxis=dict(gridcolor="rgba(255,255,255,0.05)", title="Asset Location"),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.05)", title="Fatal Precursors"),
+                coloraxis_showscale=False,
+                margin=dict(l=20, r=20, t=20, b=20)
             )
-            
-            fig_bar.update_traces(
-                textposition='outside',
-                textfont=dict(size=14, color="#0f172a"),
-                marker=dict(line=dict(color="rgba(227, 24, 55, 0.4)", width=1)),
-                hovertemplate="<b>%{y}</b><br>Precursors: %{x}<extra></extra>"
-            )
-            
-            st.plotly_chart(fig_bar, use_container_width=True, config={'displayModeBar': False})
+            fig_bar.update_traces(textposition='outside', marker_line_color='rgba(255,255,255,0.15)', marker_line_width=1)
+            st.plotly_chart(fig_bar, use_container_width=True)
         else:
             st.info("No SIF Precursors identified in current logs.")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_right:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px;'>⚠️ Top Violated IOGP Life-Saving Rules</h3>", unsafe_allow_html=True)
+        st.subheader("⚠️ Top Violated IOGP Rules")
         if not sif_df.empty and "iogp_rules" in sif_df.columns:
             all_rules = [rule for rules_list in sif_df["iogp_rules"].dropna() if isinstance(rules_list, list) for rule in rules_list]
             if all_rules:
                 rule_series = pd.Series(all_rules).value_counts().reset_index()
                 rule_series.columns = ["IOGP Rule", "Violation Count"]
-                
-                # Updated high-contrast corporate palette for distinct rule segments
                 fig_pie = px.pie(
                     rule_series,
                     names="IOGP Rule",
                     values="Violation Count",
-                    hole=0.6,
-                    color_discrete_sequence=["#e31837", "#0ea5e9", "#f59e0b", "#10b981", "#8b5cf6", "#475569", "#0f172a"]
+                    hole=0.55,
+                    color_discrete_sequence=["#ef4444", "#f97316", "#eab308", "#06b6d4", "#3b82f6"]
                 )
                 fig_pie.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color="#0f172a", family="Plus Jakarta Sans"),
-                    margin=dict(l=10, r=10, t=10, b=10),
+                    font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                    margin=dict(l=20, r=20, t=20, b=20),
                     legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
                 )
-                fig_pie.update_traces(marker=dict(line=dict(color='#ffffff', width=2)))
+                fig_pie.update_traces(marker=dict(line=dict(color='rgba(15, 23, 42, 0.8)', width=2)))
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
                 st.info("No IOGP rules mapped yet.")
@@ -364,22 +344,24 @@ if not df.empty:
             st.info("No rules data available.")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 24px;'></div>", unsafe_allow_html=True)
 
     # High-Risk Precursor Incident Feed
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px;'> Real-Time HSE Intelligence Feed</h3>", unsafe_allow_html=True)
+    st.subheader("📋 Real-Time HSE Intelligence Feed")
     
-    display_cols = [
+    standard_cols = [
         "created_at", "location", "activity", "is_sif_potential",
         "iogp_rules", "energy_source", "barrier_status", "recommended_action"
     ]
-    actual_cols = [col for col in display_cols if col in df.columns]
+    display_cols = [col for col in standard_cols if col in df.columns]
+    
+    sort_column = "created_at" if "created_at" in df.columns else df.columns[0]
     
     st.dataframe(
-        df[actual_cols].sort_values(by=actual_cols[0], ascending=False),
+        df[display_cols].sort_values(by=sort_column, ascending=False),
         use_container_width=True,
-        height=300
+        height=350
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
