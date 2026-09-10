@@ -16,6 +16,7 @@ st.set_page_config(
 SUPABASE_URL = "https://rmbpxtqzxxjcbapuzmxz.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYnB4dHF6eHhqY2JhcHV6bXh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNjQ5NDMsImV4cCI6MjEwMzk0MDk0M30.ZUvIgfMbz9nf6iJ4v7Uk-vbvy1fvaNxr0vRrhqclJlU"
 N8N_WEBHOOK_URL = "https://thesilentvisualizer.app.n8n.cloud/webhook/submit-safety-log"
+N8N_REPORT_WEBHOOK_URL = "https://thesilentvisualizer.app.n8n.cloud/webhook/2bd1bd8f-b742-4f2c-9820-de261790f108"
 
 # ---------------- LIGHT CORPORATE THEME INJECTION (OIL INDIA BRANDING) ----------------
 st.markdown("""
@@ -259,6 +260,24 @@ with st.sidebar:
         else:
             st.warning("Please upload a CSV/XLSX file or enter narrative text before submitting.")
 
+    st.markdown("---")
+    st.markdown("### On-Demand Reporting")
+    st.caption("Manually trigger the weekly Excel report delivery to the Safety Officer via Telegram.")
+        
+    report_btn = st.button("📥 Send Weekly Report", use_container_width=True)
+        
+    if report_btn:
+        with st.spinner("Compiling and sending Excel report via n8n..."):
+            try:
+                res = requests.post(N8N_REPORT_WEBHOOK_URL.strip(), timeout=20)
+                if res.status_code == 200:
+                     st.success("✅ Report successfully generated and sent to Telegram!")
+                else:
+                    st.error(f"Execution Error ({res.status_code}): Report not sent.")
+            except Exception as e:
+                st.error(f"Could not connect to n8n Webhook: {e}")
+    
+
 # ---------------- MAIN DASHBOARD & ANALYTICS ----------------
 try:
     response = supabase.table("oil_safety_logs").select("*").execute()
@@ -386,17 +405,22 @@ if not df.empty:
                     rule_series,
                     names="IOGP Rule",
                     values="Violation Count",
-                    hole=0.6,
-                    color_discrete_sequence=["#e31837", "#0ea5e9", "#f59e0b", "#10b981", "#8b5cf6", "#475569", "#0f172a"]
+                    hole=0.55,
+                    color_discrete_sequence=["#ef4444", "#f97316", "#eab308", "#06b6d4", "#3b82f6"]
                 )
                 fig_pie.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
-                    font=dict(color="#0f172a", family="Plus Jakarta Sans"),
-                    margin=dict(l=10, r=10, t=10, b=10),
-                    legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
+                    font=dict(color="#94a3b8", family="Plus Jakarta Sans"),
+                    margin=dict(l=10, r=10, t=20, b=120), # Increased bottom margin for mobile wrap
+                    legend=dict(orientation="h", yanchor="top", y=-0.05, xanchor="center", x=0.5) # Anchored top so it expands downwards
                 )
-                fig_pie.update_traces(marker=dict(line=dict(color='#ffffff', width=2)))
+                fig_pie.update_traces(
+                    textposition='inside',
+                    textinfo='percent',
+                    insidetextorientation='radial', # Aligns text with the slice curve
+                    marker=dict(line=dict(color='rgba(15, 23, 42, 0.8)', width=2))
+                )
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
                 st.info("No IOGP rules mapped yet.")
